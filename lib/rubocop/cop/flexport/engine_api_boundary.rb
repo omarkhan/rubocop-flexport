@@ -266,8 +266,10 @@ module RuboCop
         end
 
         def is_model_access?(node)
+          @model_access_cache ||= {}
           full_name = [node, *node.ancestors.take_while { |node| node.const_type? }].last.const_name
-          `rails runner 'puts #{full_name}.ancestors'`.split.include?("ActiveRecord::Base")
+          return @model_access_cache[full_name] if @model_access_cache.key?(full_name)
+          @model_access_cache[full_name] = `rails runner 'puts #{full_name}.ancestors'`.split.include?("ActiveRecord::Base")
         end
 
         def valid_engine_api_access?(node, accessed_engine)
