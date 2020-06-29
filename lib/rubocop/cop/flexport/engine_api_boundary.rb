@@ -174,6 +174,7 @@ module RuboCop
           return unless accessed_engine
           return if valid_engine_access?(node, accessed_engine)
 
+          return unless is_model_access?(node)
           add_offense(node, message: message(accessed_engine))
         end
 
@@ -262,6 +263,11 @@ module RuboCop
           return false if strongly_protected_engine?(accessed_engine)
 
           valid_engine_api_access?(node, accessed_engine)
+        end
+
+        def is_model_access?(node)
+          full_name = [node, *node.ancestors.take_while { |node| node.const_type? }].last.const_name
+          `rails runner 'puts #{full_name}.ancestors'`.split.include?("ActiveRecord::Base")
         end
 
         def valid_engine_api_access?(node, accessed_engine)
