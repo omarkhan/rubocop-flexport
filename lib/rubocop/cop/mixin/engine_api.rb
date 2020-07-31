@@ -24,10 +24,16 @@ module RuboCop
         }
       }.freeze
 
+      def self.included(cls)
+        class << cls
+          attr_accessor :api_list_cache
+        end
+      end
+
       def extract_api_list(engines_path, engine, api_file)
         key = cache_key(engine, api_file)
-        @cache ||= {}
-        cached = @cache[key]
+        self.class.api_list_cache ||= {}
+        cached = self.class.api_list_cache[key]
         return cached if cached
 
         details = API_FILE_DETAILS[api_file]
@@ -37,7 +43,7 @@ module RuboCop
 
         list = extract_array(path, details[:array_matcher])
 
-        @cache[key] = list
+        self.class.api_list_cache[key] = list
         list
       end
 
